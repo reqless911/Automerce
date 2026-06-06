@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}CSV Import{% endblock %}
+{% block page_title %}CSV Import{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-1">
+    <div class="col-lg-7">
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-cloud-upload me-2"></i>Import Products from CSV
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('import_csv') }}" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="csv_file" class="form-label fw-semibold">
+                            Select CSV File <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" class="form-control" id="csv_file" name="csv_file"
+                               accept=".csv" required>
+                        <div class="form-text">File must be a valid .csv with the required column headers.</div>
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-magic me-2"></i>
+                        Each imported product will automatically trigger a
+                        <strong>New Arrival</strong> promotional post via the automation engine.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload me-1"></i>Upload &amp; Import
+                    </button>
+                    <a href="{{ url_for('products') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-table me-2"></i>Required CSV Format
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    The CSV file must contain the following column headers exactly as shown.
+                    Additional columns are ignored during import.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm mb-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th>product_name</th>
+                                <th>category</th>
+                                <th>price</th>
+                                <th>stock_quantity</th>
+                                <th>description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Men's Casual Shirt</td>
+                                <td>Clothing</td>
+                                <td>1200</td>
+                                <td>15</td>
+                                <td>Lightweight cotton shirt, available in S/M/L/XL</td>
+                            </tr>
+                            <tr>
+                                <td>Gold Hoop Earrings</td>
+                                <td>Accessories</td>
+                                <td>450</td>
+                                <td>30</td>
+                                <td>18K gold-plated hoop earrings, 4cm diameter</td>
+                            </tr>
+                            <tr>
+                                <td>Ceramic Mug Set</td>
+                                <td>Household</td>
+                                <td>800</td>
+                                <td>20</td>
+                                <td>Set of 4 ceramic mugs, dishwasher safe</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mb-0">
+                    New categories found in the CSV are created automatically.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
