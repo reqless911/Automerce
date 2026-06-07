@@ -91,6 +91,10 @@
                         <td class="text-muted small">{{ product.created_at[:10] }}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('posts.create_post', product_id=product.product_id) }}"
+                                   class="btn btn-outline-success" title="Create Post">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a>
                                 <a href="{{ url_for('products.edit_product', product_id=product.product_id) }}"
                                    class="btn btn-outline-primary" title="Edit">
                                     <i class="bi bi-pencil"></i>

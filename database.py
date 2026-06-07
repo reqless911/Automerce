@@ -69,13 +69,16 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS generated_posts (
-            post_id     INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_id  INTEGER REFERENCES products(product_id),
-            template_id INTEGER REFERENCES templates(template_id),
-            post_type   TEXT,
-            content     TEXT,
-            status      TEXT    DEFAULT 'Pending',
-            created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+            post_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id   INTEGER REFERENCES products(product_id),
+            template_id  INTEGER REFERENCES templates(template_id),
+            post_type    TEXT,
+            caption      TEXT,
+            content      TEXT,
+            export_format TEXT DEFAULT 'html',
+            status       TEXT    DEFAULT 'Pending',
+            created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at   DATETIME
         );
 
         CREATE TABLE IF NOT EXISTS analytics_events (
@@ -101,9 +104,20 @@ def init_db():
         );
     """)
 
+    _ensure_generated_posts_columns(conn)
     conn.commit()
     conn.close()
     _seed_defaults()
+
+
+def _ensure_generated_posts_columns(conn):
+    columns = {row['name'] for row in conn.execute("PRAGMA table_info(generated_posts)").fetchall()}
+    if 'caption' not in columns:
+        conn.execute("ALTER TABLE generated_posts ADD COLUMN caption TEXT")
+    if 'export_format' not in columns:
+        conn.execute("ALTER TABLE generated_posts ADD COLUMN export_format TEXT DEFAULT 'html'")
+    if 'updated_at' not in columns:
+        conn.execute("ALTER TABLE generated_posts ADD COLUMN updated_at DATETIME")
 
 
 # ---------------------------------------------------------------------------
@@ -402,13 +416,21 @@ def delete_template(template_id):
 # Generated posts helpers
 # ---------------------------------------------------------------------------
 
-def save_generated_post(product_id, post_type, content, template_id=None):
+def save_generated_post(product_id, post_type, content, template_id=None, caption=None, export_format='html'):
     conn = get_db()
     c = conn.cursor()
     c.execute("""
-        INSERT INTO generated_posts (product_id, template_id, post_type, content, status)
-        VALUES (?, ?, ?, ?, 'Pending')
-    """, (product_id, template_id, post_type, content))
+        INSERT INTO generated_posts (
+            product_id,
+            template_id,
+            post_type,
+            caption,
+            content,
+            export_format,
+            status,
+            updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'Pending', CURRENT_TIMESTAMP)
+    """, (product_id, template_id, post_type, caption, content, export_format))
     post_id = c.lastrowid
     conn.commit()
     conn.close()
@@ -455,9 +477,27 @@ def get_post_by_id(post_id):
     return row
 
 
-def update_post_content(post_id, content):
+def update_post_content(post_id, content, caption=None, template_id=None, export_format=None, post_type=None):
     conn = get_db()
-    conn.execute("UPDATE generated_posts SET content=? WHERE post_id=?", (content, post_id))
+    fields = ["content = ?", "updated_at = CURRENT_TIMESTAMP"]
+    params = [content]
+
+    if caption is not None:
+        fields.append("caption = ?")
+        params.append(caption)
+    if template_id is not None:
+        fields.append("template_id = ?")
+        params.append(template_id)
+    if export_format is not None:
+        fields.append("export_format = ?")
+        params.append(export_format)
+    if post_type is not None:
+        fields.append("post_type = ?")
+        params.append(post_type)
+
+    query = f"UPDATE generated_posts SET {', '.join(fields)} WHERE post_id = ?"
+    params.append(post_id)
+    conn.execute(query, tuple(params))
     conn.commit()
     conn.close()
 

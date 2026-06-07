@@ -1,62 +1,104 @@
 {% extends 'base.html' %}
-{% block title %}Review Post{% endblock %}
-{% block page_title %}Review Generated Post{% endblock %}
+{% block title %}{% if create_mode %}Create Marketing Post{% else %}Review Post{% endif %}{% endblock %}
+{% block page_title %}{% if create_mode %}Create Marketing Post{% else %}Review Generated Post{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-1">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span>
-                    <i class="bi bi-eye me-2"></i>
-                    Post #{{ post.post_id }} —
-                    <span class="badge bg-primary ms-1">{{ post.post_type }}</span>
-                </span>
-                {% if post.status == 'Approved' %}
-                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Approved</span>
-                {% else %}
-                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                <div>
+                    <span class="fw-semibold">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        {% if create_mode %}
+                            Create a new marketing post
+                        {% else %}
+                            Post #{{ post.post_id }} —
+                            <span class="badge bg-primary ms-1">{{ post.post_type }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if not create_mode %}
+                    {% if post.status == 'Approved' %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Approved</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                    {% endif %}
                 {% endif %}
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-3">
-                    Product: <strong>{{ post.product_name or '—' }}</strong> &nbsp;|&nbsp;
-                    Template: <strong>{{ post.template_name or 'None' }}</strong> &nbsp;|&nbsp;
-                    Generated: <strong>{{ post.created_at[:16] }}</strong>
-                </p>
+                {% if create_mode %}
+                    <p class="text-muted small mb-3">
+                        Product: <strong>{{ product.name }}</strong> &nbsp;|&nbsp;
+                        Category: <strong>{{ product.category_name or '—' }}</strong>
+                    </p>
+                {% else %}
+                    <p class="text-muted small mb-3">
+                        Product: <strong>{{ post.product_name or '—' }}</strong> &nbsp;|&nbsp;
+                        Template: <strong>{{ post.template_name or 'None' }}</strong> &nbsp;|&nbsp;
+                        Generated: <strong>{{ post.created_at[:16] }}</strong>
+                    </p>
+                {% endif %}
 
-                <form method="POST" action="{{ url_for('posts.edit_post', post_id=post.post_id) }}">
-                    <div class="mb-3">
-                        <label for="template_id" class="form-label fw-semibold">Re-render with Template</label>
-                        <select class="form-select" id="template_id" name="template_id">
-                            <option value="">— Keep current content —</option>
-                            {% for tmpl in templates %}
-                            <option value="{{ tmpl.template_id }}"
-                                {% if tmpl.template_id == post.template_id %}selected{% endif %}>
-                                {{ tmpl.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="form-text">
-                            Selecting a template and saving will re-render the post content using that template.
+                <form method="POST" action="{{ form_action }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="template_id" class="form-label fw-semibold">Template</label>
+                                <select class="form-select" id="template_id" name="template_id" required>
+                                    {% for tmpl in templates %}
+                                    <option value="{{ tmpl.template_id }}"
+                                            data-preview="{{ preview_by_template[tmpl.template_id] | e }}"
+                                            {% if tmpl.template_id == selected_template_id %}selected{% endif %}>
+                                        {{ tmpl.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Choose a template to render the marketing post.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="caption" class="form-label fw-semibold">Caption</label>
+                                <textarea class="form-control" id="caption" name="caption" rows="3">{{ caption }}</textarea>
+                                <div class="form-text">A short caption that will appear in export previews.</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="content" class="form-label fw-semibold">Post Content</label>
                         <textarea class="form-control font-monospace post-content-area"
-                                  id="content" name="content" rows="12">{{ post.content or '' }}</textarea>
+                                  id="content" name="content" rows="12">{{ content }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="border rounded p-3 bg-light" id="previewPanel">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong>Live Preview</strong>
+                                {% if not create_mode %}
+                                <a href="{{ url_for('posts.export_post', post_id=post.post_id) }}" class="btn btn-sm btn-outline-secondary">
+                                    Export Post
+                                </a>
+                                {% endif %}
+                            </div>
+                            <div class="mb-2 text-muted small">Caption</div>
+                            <div id="previewCaption" class="mb-3 text-wrap text-break fst-italic text-secondary">{{ caption or 'No caption yet.' }}</div>
+                            <div class="mb-2 text-muted small">Content</div>
+                            <div id="previewContent" class="bg-white p-3 rounded text-break post-preview-content"></div>
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i>Save Changes
+                            <i class="bi bi-save me-1"></i>
+                            {% if create_mode %}Create Post{% else %}Save Changes{% endif %}
                         </button>
                         <a href="{{ url_for('posts.posts') }}" class="btn btn-outline-secondary">Back</a>
                     </div>
                 </form>
 
-                {% if post.status != 'Approved' %}
+                {% if not create_mode and post.status != 'Approved' %}
                 <hr>
                 <form method="POST" action="{{ url_for('posts.approve_post', post_id=post.post_id) }}">
                     <button type="submit" class="btn btn-success"
@@ -72,4 +114,51 @@
         </div>
     </div>
 </div>
+
+<script>
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function updateLivePreview() {
+    var caption = document.getElementById('caption').value.trim();
+    var contentArea = document.getElementById('content');
+    var content = contentArea.value;
+    var selectedOption = document.getElementById('template_id').selectedOptions[0];
+    var templatePreview = selectedOption ? selectedOption.dataset.preview || '' : '';
+
+    if (!content || content.trim() === '') {
+        content = templatePreview;
+        contentArea.value = content;
+    }
+
+    document.getElementById('previewCaption').innerHTML = caption ? escapeHtml(caption) : 'No caption yet.';
+    document.getElementById('previewContent').innerHTML = escapeHtml(content).replace(/\n/g, '<br>');
+}
+
+function bindPreviewEvents() {
+    document.getElementById('caption').addEventListener('input', updateLivePreview);
+    document.getElementById('content').addEventListener('input', updateLivePreview);
+    document.getElementById('template_id').addEventListener('change', function() {
+        var selectedOption = this.selectedOptions[0];
+        var templatePreview = selectedOption ? selectedOption.dataset.preview || '' : '';
+        var contentArea = document.getElementById('content');
+
+        if (!contentArea.value.trim()) {
+            contentArea.value = templatePreview;
+        }
+        updateLivePreview();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    bindPreviewEvents();
+    updateLivePreview();
+});
+</script>
 {% endblock %}
