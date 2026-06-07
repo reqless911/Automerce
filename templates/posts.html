@@ -67,6 +67,19 @@
                                     </button>
                                 </form>
                                 {% endif %}
+
+                                {# Copy button only visible for approved posts. The full post content
+                                   is stored in a data attribute (escaped) so JS can copy it without
+                                   exposing unescaped HTML into the DOM. #}
+                                {% if post.status == 'Approved' %}
+                                <button type="button"
+                                        class="btn btn-outline-success btn-sm"
+                                        title="Copy post"
+                                        data-content="{{ post.content | e }}"
+                                        onclick="copyPostContent(this, this.dataset.content)">
+                                    Copy post
+                                </button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -88,4 +101,44 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+/**
+ * copyPostContent(button, text)
+ * Copies the provided text to the clipboard and gives user feedback.
+ *
+ * Parameters:
+ *  - button: the DOM element (button) that was clicked
+ *  - text: the string content to copy to clipboard
+ */
+function copyPostContent(button, text) {
+    // Keep the original button label so we can restore it later
+    var originalLabel = button.innerText;
+
+    // Use the modern Clipboard API to write text to the clipboard.
+    // Note: navigator.clipboard requires a secure context (https) or localhost.
+    navigator.clipboard.writeText(text).then(function() {
+        // If the copy succeeds, update the button to show confirmation.
+        // We use a check mark to make it visually clear.
+        button.innerText = 'Copied ✓';
+
+        // After 2000ms (2 seconds) restore the original button label.
+        setTimeout(function() {
+            button.innerText = originalLabel;
+        }, 2000);
+    }).catch(function(err) {
+        // If copying failed (permission denied or other error), log it
+        // and provide gentle feedback to the user before restoring.
+        console.error('Failed to copy post content:', err);
+        button.innerText = 'Copy failed';
+        setTimeout(function() {
+            button.innerText = originalLabel;
+        }, 2000);
+    });
+}
+
+// No automatic wiring is required because buttons call the function inline
+// via their onclick attribute: onclick="copyPostContent(this, this.dataset.content)"
+</script>
+
 {% endblock %}
