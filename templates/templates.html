@@ -12,7 +12,7 @@
                 <i class="bi bi-plus-circle me-2"></i>Create New Template
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('add_template') }}">
+                <form method="POST" action="{{ url_for('posts.add_template') }}">
                     <div class="mb-3">
                         <label for="name" class="form-label fw-semibold">Template Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="name" name="name"

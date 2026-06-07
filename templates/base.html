@@ -25,7 +25,7 @@
 
     <nav id="sidebar" class="d-flex flex-column flex-shrink-0 p-3">
         <!-- Brand -->
-        <a href="{{ url_for('dashboard') }}"
+        <a href="{{ url_for('analytics.dashboard') }}"
            class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none sidebar-brand">
             <i class="bi bi-shop-window me-2 fs-4"></i>
             <span class="fs-5 fw-bold">Automerce</span>
@@ -36,15 +36,15 @@
         <ul class="nav nav-pills flex-column mb-auto">
 
             <li class="nav-item">
-                <a href="{{ url_for('dashboard') }}"
-                   class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <a href="{{ url_for('analytics.dashboard') }}"
+                   class="nav-link {% if request.endpoint == 'analytics.dashboard' %}active{% endif %}">
                     <i class="bi bi-speedometer2 me-2"></i>Dashboard
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('products') }}"
-                   class="nav-link {% if request.endpoint in ('products','add_product','edit_product') %}active{% endif %}">
+                <a href="{{ url_for('products.products') }}"
+                   class="nav-link {% if request.endpoint in ('products.products','products.add_product','products.edit_product') %}active{% endif %}">
                     <i class="bi bi-box-seam me-2"></i>Products
                     {% set out = namespace(val=0) %}
                     {# out-of-stock badge is injected via context processor if needed #}
@@ -52,36 +52,36 @@
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('posts') }}"
-                   class="nav-link {% if request.endpoint in ('posts','edit_post') %}active{% endif %}">
+                <a href="{{ url_for('posts.posts') }}"
+                   class="nav-link {% if request.endpoint in ('posts.posts','posts.edit_post') %}active{% endif %}">
                     <i class="bi bi-file-earmark-text me-2"></i>Generated Posts
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('templates') }}"
-                   class="nav-link {% if request.endpoint in ('templates','edit_template') %}active{% endif %}">
+                <a href="{{ url_for('posts.templates') }}"
+                   class="nav-link {% if request.endpoint in ('posts.templates','posts.edit_template') %}active{% endif %}">
                     <i class="bi bi-layout-text-window me-2"></i>Templates
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('analytics') }}"
-                   class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">
+                <a href="{{ url_for('analytics.analytics') }}"
+                   class="nav-link {% if request.endpoint == 'analytics.analytics' %}active{% endif %}">
                     <i class="bi bi-bar-chart-line me-2"></i>Analytics
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('import_csv') }}"
-                   class="nav-link {% if request.endpoint == 'import_csv' %}active{% endif %}">
+                <a href="{{ url_for('products.import_csv') }}"
+                   class="nav-link {% if request.endpoint == 'products.import_csv' %}active{% endif %}">
                     <i class="bi bi-cloud-upload me-2"></i>CSV Import
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ url_for('logs') }}"
-                   class="nav-link {% if request.endpoint == 'logs' %}active{% endif %}">
+                <a href="{{ url_for('analytics.logs') }}"
+                   class="nav-link {% if request.endpoint == 'analytics.logs' %}active{% endif %}">
                     <i class="bi bi-journal-text me-2"></i>System Logs
                 </a>
             </li>
@@ -94,7 +94,7 @@
         <div class="d-flex align-items-center sidebar-footer">
             <i class="bi bi-person-circle me-2 fs-5"></i>
             <span class="me-auto small">{{ session.username }}</span>
-            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-secondary ms-2"
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-secondary ms-2"
                title="Logout">
                 <i class="bi bi-box-arrow-right"></i>
             </a>

@@ -50,7 +50,13 @@ A Flask-based e-commerce automation platform that manages products, generates pr
    pip install -r requirement.txt
    ```
 
-4. Run the application:
+4. Set a secret key in your environment before running the app:
+   ```bash
+   set AUTOMERCE_SECRET_KEY=your-secret-key  # Windows
+   export AUTOMERCE_SECRET_KEY=your-secret-key  # macOS/Linux
+   ```
+
+5. Run the application:
    ```bash
    python app.py
    ```

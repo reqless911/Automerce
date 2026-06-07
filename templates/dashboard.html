@@ -65,7 +65,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="fw-semibold"><i class="bi bi-file-earmark-text me-2"></i>Recent Generated Posts</span>
-                <a href="{{ url_for('posts') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                <a href="{{ url_for('posts.posts') }}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body p-0">
                 {% if recent_posts %}
@@ -111,7 +111,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="fw-semibold"><i class="bi bi-journal-text me-2"></i>Recent System Activity</span>
-                <a href="{{ url_for('logs') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                <a href="{{ url_for('analytics.logs') }}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body p-0">
                 {% if recent_logs %}

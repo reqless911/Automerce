@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 mt-1">
     <p class="text-muted mb-0">{{ products|length }} product(s) in inventory</p>
-    <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+    <a href="{{ url_for('products.add_product') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i>Add New Product
     </a>
 </div>
@@ -91,12 +91,12 @@
                         <td class="text-muted small">{{ product.created_at[:10] }}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('edit_product', product_id=product.product_id) }}"
+                                <a href="{{ url_for('products.edit_product', product_id=product.product_id) }}"
                                    class="btn btn-outline-primary" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form method="POST"
-                                      action="{{ url_for('delete_product', product_id=product.product_id) }}"
+                                      action="{{ url_for('products.delete_product', product_id=product.product_id) }}"
                                       onsubmit="return confirm('Delete {{ product.name }}? This cannot be undone.');">
                                     <button type="submit" class="btn btn-outline-danger" title="Delete">
                                         <i class="bi bi-trash"></i>
@@ -184,10 +184,10 @@
         <h5>No products yet</h5>
         <p>Add your first product or import from a CSV file.</p>
         <div class="d-flex gap-2 justify-content-center">
-            <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+            <a href="{{ url_for('products.add_product') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle me-1"></i>Add Product
             </a>
-            <a href="{{ url_for('import_csv') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('products.import_csv') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-cloud-upload me-1"></i>Import CSV
             </a>
         </div>

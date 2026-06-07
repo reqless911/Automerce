@@ -10,7 +10,7 @@
                 <i class="bi bi-plus-circle me-2"></i>New Product Details
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('add_product') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ url_for('products.add_product') }}" enctype="multipart/form-data">
 
                     <div class="row g-3">
                         <div class="col-md-8">
@@ -71,7 +71,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save me-1"></i>Save Product
                         </button>
-                        <a href="{{ url_for('products') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{{ url_for('products.products') }}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
