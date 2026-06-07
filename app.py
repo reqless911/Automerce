@@ -467,6 +467,10 @@ def import_csv():
 
         try:
             df = pd.read_csv(file)
+            # Normalize CSV column names so variants like "Product Name",
+            # "product name", "PRODUCT_NAME", or " product_name " all become
+            # "product_name" for consistent validation.
+            df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
         except Exception as e:
             flash('Could not read CSV file: {}'.format(str(e)), 'danger')
             return redirect(url_for('import_csv'))

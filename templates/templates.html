@@ -93,6 +93,14 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm"
+                                                title="Preview template"
+                                                data-body="{{ tmpl.template_body | e }}"
+                                                data-name="{{ tmpl.name | e }}"
+                                                onclick="previewTemplate(this.dataset.body, this.dataset.name)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
                                         <a href="{{ url_for('edit_template', template_id=tmpl.template_id) }}"
                                            class="btn btn-outline-primary" title="Edit">
                                             <i class="bi bi-pencil"></i>
@@ -121,4 +129,52 @@
     </div>
 
 </div>
+
+<!-- Preview modal for template render preview -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Template Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="previewModalBody" class="p-3 bg-light text-wrap" style="white-space: pre-wrap;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * previewTemplate(body, name)
+ * Render a sample version of the template body, then show it in a modal.
+ *
+ * @param {string} body - The raw template text containing placeholders.
+ * @param {string} name - The human-readable template name.
+ */
+function previewTemplate(body, name) {
+    // Replace placeholder variables with sample values.
+    var rendered = body
+        .replace(/\{\{\s*product_name\s*\}\}/gi, 'Floral Chiffon Dress')
+        .replace(/\{\{\s*price\s*\}\}/gi, '2,500')
+        .replace(/\{\{\s*description\s*\}\}/gi, 'Elegant floral print, perfect for all occasions')
+        .replace(/\{\{\s*category\s*\}\}/gi, 'Clothing')
+        .replace(/\{\{\s*stock\s*\}\}/gi, '12');
+
+    // Set the modal title to the template name.
+    document.getElementById('previewModalLabel').innerText = name;
+
+    // Put the rendered text into the preformatted message preview area.
+    document.getElementById('previewModalBody').innerText = rendered;
+
+    // Show the Bootstrap modal using the Bootstrap 5 JS API.
+    var previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    previewModal.show();
+}
+</script>
+
 {% endblock %}
