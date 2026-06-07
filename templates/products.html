@@ -12,7 +12,31 @@
 
 {% if products %}
 <div class="card">
+    <div class="card-body">
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-5">
+                <input id="searchInput"
+                       type="text"
+                       class="form-control"
+                       placeholder="Search products..."
+                       aria-label="Search products">
+            </div>
+            <div class="col-md-4">
+                <select id="categoryFilter" class="form-select" aria-label="Filter by category">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
+            <div class="col-md-3 text-md-end">
+                <button id="clearFiltersButton" type="button" class="btn btn-outline-secondary">
+                    Clear filters
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="card-body p-0">
+        <div id="noProductsMessage" class="alert alert-warning text-center m-3 d-none" role="status">
+            No products found.
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -87,6 +111,72 @@
         </div>
     </div>
 </div>
+<script>
+    const filterProducts = () => {
+        const searchValue = document.getElementById('searchInput').value.trim().toLowerCase();
+        const categoryValue = document.getElementById('categoryFilter').value;
+        const rows = document.querySelectorAll('tbody tr');
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+            const nameCell = row.cells[1];
+            const categoryCell = row.cells[2];
+            const nameText = nameCell ? nameCell.textContent.trim().toLowerCase() : '';
+            const categoryText = categoryCell ? categoryCell.textContent.trim().toLowerCase() : '';
+
+            const matchesSearch = !searchValue || nameText.includes(searchValue);
+            const matchesCategory = categoryValue === 'all' || categoryText === categoryValue;
+
+            if (matchesSearch && matchesCategory) {
+                row.style.display = '';
+                visibleCount += 1;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const noProductsMessage = document.getElementById('noProductsMessage');
+        if (visibleCount === 0) {
+            noProductsMessage.classList.remove('d-none');
+        } else {
+            noProductsMessage.classList.add('d-none');
+        }
+    };
+
+    const populateCategoryFilter = () => {
+        const categoryFilter = document.getElementById('categoryFilter');
+        const rows = document.querySelectorAll('tbody tr');
+        const categories = new Set();
+
+        rows.forEach((row) => {
+            const categoryCell = row.cells[2];
+            if (!categoryCell) return;
+            const categoryText = categoryCell.textContent.trim();
+            if (categoryText && categoryText !== '—') {
+                categories.add(categoryText);
+            }
+        });
+
+        const sortedCategories = Array.from(categories).sort((a, b) => a.localeCompare(b));
+        sortedCategories.forEach((category) => {
+            const option = document.createElement('option');
+            option.value = category.toLowerCase();
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        populateCategoryFilter();
+        document.getElementById('searchInput').addEventListener('input', filterProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+        document.getElementById('clearFiltersButton').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = 'all';
+            filterProducts();
+        });
+    });
+</script>
 {% else %}
 <div class="card">
     <div class="card-body text-center py-5 text-muted">

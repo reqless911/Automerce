@@ -9,7 +9,37 @@
 
 {% if posts %}
 <div class="card">
+    <div class="card-body">
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select" aria-label="Filter by status">
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="platformFilter" class="form-select" aria-label="Filter by platform">
+                    <option value="all">All Platforms</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="facebook marketplace">Facebook Marketplace</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input id="postSearch" type="search" class="form-control" placeholder="Search by product name..." aria-label="Search by product name">
+            </div>
+            <div class="col-md-2 text-md-end">
+                <button id="clearPostFilters" type="button" class="btn btn-outline-secondary w-100">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="card-body p-0">
+        <div id="noPostsMatch" class="alert alert-warning text-center m-3 d-none" role="status">
+            No posts match your filters.
+        </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -139,6 +169,62 @@ function copyPostContent(button, text) {
 
 // No automatic wiring is required because buttons call the function inline
 // via their onclick attribute: onclick="copyPostContent(this, this.dataset.content)"
+
+/**
+ * filterPosts()
+ * Reads all active filters and hides table rows that do not match.
+ */
+function filterPosts() {
+    var statusValue = document.getElementById('statusFilter').value;
+    var platformValue = document.getElementById('platformFilter').value;
+    var searchValue = document.getElementById('postSearch').value.trim().toLowerCase();
+    var rows = document.querySelectorAll('tbody tr');
+    var visibleCount = 0;
+
+    rows.forEach(function(row) {
+        // Get the product name, template/platform name, and status text.
+        var productCell = row.cells[1];
+        var templateCell = row.cells[3];
+        var statusCell = row.cells[4];
+
+        var productText = productCell ? productCell.textContent.trim().toLowerCase() : '';
+        var templateText = templateCell ? templateCell.textContent.trim().toLowerCase() : '';
+        var statusText = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+
+        // Determine whether this row matches all active filters.
+        var matchesSearch = !searchValue || productText.indexOf(searchValue) !== -1;
+        var matchesStatus = statusValue === 'all' || statusText.indexOf(statusValue) !== -1;
+        var matchesPlatform = platformValue === 'all' || templateText.indexOf(platformValue) !== -1;
+
+        if (matchesSearch && matchesStatus && matchesPlatform) {
+            row.style.display = '';
+            visibleCount += 1;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Show or hide the no-results alert based on whether any rows remain visible.
+    var noPostsMatch = document.getElementById('noPostsMatch');
+    if (visibleCount === 0) {
+        noPostsMatch.classList.remove('d-none');
+    } else {
+        noPostsMatch.classList.add('d-none');
+    }
+}
+
+// Wire up filter controls so the table updates on change/input events.
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('statusFilter').addEventListener('change', filterPosts);
+    document.getElementById('platformFilter').addEventListener('change', filterPosts);
+    document.getElementById('postSearch').addEventListener('input', filterPosts);
+    document.getElementById('clearPostFilters').addEventListener('click', function() {
+        document.getElementById('statusFilter').value = 'all';
+        document.getElementById('platformFilter').value = 'all';
+        document.getElementById('postSearch').value = '';
+        filterPosts();
+    });
+});
 </script>
 
 {% endblock %}
