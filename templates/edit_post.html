@@ -25,7 +25,7 @@
                     Generated: <strong>{{ post.created_at[:16] }}</strong>
                 </p>
 
-                <form method="POST" action="{{ url_for('edit_post', post_id=post.post_id) }}">
+                <form method="POST" action="{{ url_for('posts.edit_post', post_id=post.post_id) }}">
                     <div class="mb-3">
                         <label for="template_id" class="form-label fw-semibold">Re-render with Template</label>
                         <select class="form-select" id="template_id" name="template_id">
@@ -58,7 +58,7 @@
 
                 {% if post.status != 'Approved' %}
                 <hr>
-                <form method="POST" action="{{ url_for('approve_post', post_id=post.post_id) }}">
+                <form method="POST" action="{{ url_for('posts.approve_post', post_id=post.post_id) }}">
                     <button type="submit" class="btn btn-success"
                             {% if not post.content %}disabled{% endif %}>
                         <i class="bi bi-check-circle me-1"></i>Approve This Post

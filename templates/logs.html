@@ -41,7 +41,7 @@
                         <td>{{ log.product_name or '—' }}</td>
                         <td class="text-muted small">
                             {% if log.post_id %}
-                                <a href="{{ url_for('edit_post', post_id=log.post_id) }}">#{{ log.post_id }}</a>
+                                <a href="{{ url_for('posts.edit_post', post_id=log.post_id) }}">#{{ log.post_id }}</a>
                             {% else %}—{% endif %}
                         </td>
                         <td class="text-muted small">{{ log.logged_at[:19] }}</td>

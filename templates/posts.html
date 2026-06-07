@@ -84,13 +84,13 @@
                         <td class="text-muted small">{{ post.created_at[:16] }}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('edit_post', post_id=post.post_id) }}"
+                                <a href="{{ url_for('posts.edit_post', post_id=post.post_id) }}"
                                    class="btn btn-outline-primary" title="Review / Edit">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 {% if post.status != 'Approved' %}
                                 <form method="POST"
-                                      action="{{ url_for('approve_post', post_id=post.post_id) }}">
+                                      action="{{ url_for('posts.approve_post', post_id=post.post_id) }}">
                                     <button type="submit" class="btn btn-outline-success" title="Approve"
                                             {% if not post.content %}disabled{% endif %}>
                                         <i class="bi bi-check-lg"></i>

@@ -11,7 +11,7 @@
             </div>
             <div class="card-body">
                 <form method="POST"
-                      action="{{ url_for('edit_product', product_id=product.product_id) }}"
+                      action="{{ url_for('products.edit_product', product_id=product.product_id) }}"
                       enctype="multipart/form-data">
 
                     <div class="row g-3">
