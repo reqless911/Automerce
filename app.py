@@ -6,6 +6,7 @@ from auth_routes import auth_bp
 from product_routes import products_bp
 from post_routes import posts_bp
 from analytics_routes import analytics_bp
+from design_routes import designs_bp
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -26,8 +27,9 @@ def create_app():
     app.register_blueprint(products_bp)
     app.register_blueprint(posts_bp)
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(designs_bp)
 
-    @app.route('/uploads/<filename>')
+    @app.route('/uploads/<path:filename>')
     def uploaded_file(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 

@@ -66,6 +66,13 @@
             </li>
 
             <li class="nav-item">
+                <a href="{{ url_for('designs.designs') }}"
+                   class="nav-link {% if request.endpoint in ('designs.designs','designs.create_design','designs.edit_design','designs.graphics','designs.generate_graphics','designs.view_graphic') %}active{% endif %}">
+                    <i class="bi bi-palette me-2"></i>Design Engine
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a href="{{ url_for('analytics.analytics') }}"
                    class="nav-link {% if request.endpoint == 'analytics.analytics' %}active{% endif %}">
                     <i class="bi bi-bar-chart-line me-2"></i>Analytics

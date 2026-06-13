@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Design Templates{% endblock %}
+{% block page_title %}Marketing Design Engine{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 mt-1">
+    <div>
+        <h5 class="mb-1">Reusable design templates for branded graphics.</h5>
+        <p class="text-muted mb-0">Create templates, attach a background, then generate graphic assets from products.</p>
+    </div>
+    <div class="btn-group">
+        <a href="{{ url_for('designs.create_design') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Create Template
+        </a>
+        <a href="{{ url_for('designs.generate_graphics') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-image me-1"></i>Generate Graphics
+        </a>
+    </div>
+</div>
+
+<div class="row gy-4">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Design Templates</span>
+                <span class="badge bg-primary">{{ templates|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if templates %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Platform</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in templates %}
+                            <tr>
+                                <td>{{ template.name }}</td>
+                                <td>{{ template.platform or 'General' }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('designs.edit_design', template_id=template.template_id) }}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <form method="POST" action="{{ url_for('designs.delete_design', template_id=template.template_id) }}" class="d-inline" onsubmit="return confirm('Delete template {{ template.name }}?');">
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted py-5">
+                    <i class="bi bi-layout-text-window-reverse fs-1 mb-3"></i>
+                    <p class="mb-0">No design templates yet. Create one to start generating graphics.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Generated Graphics</span>
+                <span class="badge bg-secondary">{{ graphics|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if graphics %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Graphic</th>
+                                <th>Product</th>
+                                <th>Template</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for graphic in graphics[:8] %}
+                            <tr>
+                                <td>{{ graphic.created_at[:10] }}</td>
+                                <td>{{ graphic.product_name or 'Unknown' }}</td>
+                                <td>{{ graphic.template_name or 'Unknown' }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('designs.view_graphic', graphic_id=graphic.graphic_id) }}" class="btn btn-sm btn-outline-secondary me-1">View</a>
+                                    <a href="{{ url_for('designs.download_graphic', graphic_id=graphic.graphic_id) }}" class="btn btn-sm btn-outline-success">Download</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="card-body text-center text-muted py-5">
+                    <i class="bi bi-image fs-1 mb-3"></i>
+                    <p class="mb-0">No generated graphics yet. Use a template and some products to generate your first asset.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

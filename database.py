@@ -6,6 +6,7 @@ data-access helper functions used by app.py and automation.py.
 
 import sqlite3
 import os
+import json
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 
@@ -45,6 +46,7 @@ def init_db():
             price          REAL    NOT NULL,
             stock_quantity INTEGER DEFAULT 0,
             description    TEXT,
+            location       TEXT,
             image_path     TEXT,
             is_featured    INTEGER DEFAULT 0,
             category_id    INTEGER REFERENCES categories(category_id),
@@ -68,6 +70,15 @@ def init_db():
             created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS design_templates (
+            template_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            name             TEXT    NOT NULL,
+            platform         TEXT,
+            background_image TEXT,
+            layout_json      TEXT,
+            created_at       DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE TABLE IF NOT EXISTS generated_posts (
             post_id      INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id   INTEGER REFERENCES products(product_id),
@@ -79,6 +90,14 @@ def init_db():
             status       TEXT    DEFAULT 'Pending',
             created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at   DATETIME
+        );
+
+        CREATE TABLE IF NOT EXISTS generated_graphics (
+            graphic_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id   INTEGER REFERENCES products(product_id),
+            template_id  INTEGER REFERENCES design_templates(template_id),
+            image_path   TEXT,
+            created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
         CREATE TABLE IF NOT EXISTS analytics_events (
@@ -105,9 +124,16 @@ def init_db():
     """)
 
     _ensure_generated_posts_columns(conn)
+    _ensure_product_location_column(conn)
     conn.commit()
     conn.close()
     _seed_defaults()
+
+
+def _ensure_product_location_column(conn):
+    columns = {row['name'] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
+    if 'location' not in columns:
+        conn.execute("ALTER TABLE products ADD COLUMN location TEXT")
 
 
 def _ensure_generated_posts_columns(conn):
@@ -219,6 +245,26 @@ def _seed_defaults():
                 (name, platform, body, post_type)
             )
 
+    # Default design template for a Canva-style poster
+    default_design_name = 'Nawal Centre Poster'
+    exists_design = c.execute(
+        "SELECT 1 FROM design_templates WHERE name = ?", (default_design_name,)
+    ).fetchone()
+    if not exists_design:
+        default_layout = json.dumps({
+            "product_image": {"x": 300, "y": 330, "width": 600, "height": 420},
+            "placeholders": [
+                {"type": "product_name", "x": 260, "y": 220, "font_size": 56, "color": "#071342"},
+                {"type": "description", "x": 300, "y": 760, "font_size": 28, "color": "#c69b21", "max_width": 560},
+                {"type": "price", "x": 320, "y": 980, "font_size": 72, "color": "#f7c147"},
+                {"type": "location", "x": 240, "y": 1080, "font_size": 24, "color": "#edf1f8"}
+            ]
+        }, indent=2)
+        c.execute(
+            "INSERT INTO design_templates (name, platform, layout_json) VALUES (?, ?, ?)",
+            (default_design_name, 'Instagram', default_layout)
+        )
+
     conn.commit()
     conn.close()
 
@@ -282,20 +328,20 @@ def get_product_by_id(product_id):
     return row
 
 
-def add_product(name, price, stock_quantity, description, image_path, category_id, is_featured=0):
+def add_product(name, price, stock_quantity, description, location, image_path, category_id, is_featured=0):
     conn = get_db()
     c = conn.cursor()
     c.execute("""
-        INSERT INTO products (name, price, stock_quantity, description, image_path, category_id, is_featured)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, price, stock_quantity, description, image_path, category_id, is_featured))
+        INSERT INTO products (name, price, stock_quantity, description, location, image_path, category_id, is_featured)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (name, price, stock_quantity, description, location, image_path, category_id, is_featured))
     product_id = c.lastrowid
     conn.commit()
     conn.close()
     return product_id
 
 
-def update_product(product_id, name, price, stock_quantity, description, image_path, category_id, is_featured=0):
+def update_product(product_id, name, price, stock_quantity, description, location, image_path, category_id, is_featured=0):
     """Update product and return (old_price, old_stock) for automation engine."""
     conn = get_db()
     old = conn.execute(
@@ -306,10 +352,10 @@ def update_product(product_id, name, price, stock_quantity, description, image_p
 
     conn.execute("""
         UPDATE products
-        SET name=?, price=?, stock_quantity=?, description=?, image_path=?,
+        SET name=?, price=?, stock_quantity=?, description=?, location=?, image_path=?,
             category_id=?, is_featured=?
         WHERE product_id=?
-    """, (name, price, stock_quantity, description, image_path, category_id, is_featured, product_id))
+    """, (name, price, stock_quantity, description, location, image_path, category_id, is_featured, product_id))
     conn.commit()
     conn.close()
     return old_price, old_stock
@@ -502,6 +548,107 @@ def update_post_content(post_id, content, caption=None, template_id=None, export
     conn.close()
 
 
+# ---------------------------------------------------------------------------
+# Design engine helpers
+# ---------------------------------------------------------------------------
+
+def get_all_design_templates():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM design_templates ORDER BY platform, name").fetchall()
+    conn.close()
+    return rows
+
+
+def get_design_template_by_id(template_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM design_templates WHERE template_id = ?", (template_id,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def save_design_template(name, platform, background_image, layout_json):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO design_templates (name, platform, background_image, layout_json) VALUES (?, ?, ?, ?)",
+        (name, platform, background_image, layout_json)
+    )
+    template_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return template_id
+
+
+def update_design_template(template_id, name, platform, background_image, layout_json):
+    conn = get_db()
+    if background_image is not None:
+        conn.execute(
+            "UPDATE design_templates SET name = ?, platform = ?, background_image = ?, layout_json = ? WHERE template_id = ?",
+            (name, platform, background_image, layout_json, template_id)
+        )
+    else:
+        conn.execute(
+            "UPDATE design_templates SET name = ?, platform = ?, layout_json = ? WHERE template_id = ?",
+            (name, platform, layout_json, template_id)
+        )
+    conn.commit()
+    conn.close()
+
+
+def delete_design_template(template_id):
+    conn = get_db()
+    conn.execute("DELETE FROM design_templates WHERE template_id = ?", (template_id,))
+    conn.commit()
+    conn.close()
+
+
+def save_generated_graphic(product_id, template_id, image_path):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO generated_graphics (product_id, template_id, image_path) VALUES (?, ?, ?)",
+        (product_id, template_id, image_path)
+    )
+    graphic_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return graphic_id
+
+
+def get_generated_graphic_by_id(graphic_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT gg.*, p.name AS product_name, dt.name AS template_name "
+        "FROM generated_graphics gg "
+        "LEFT JOIN products p ON gg.product_id = p.product_id "
+        "LEFT JOIN design_templates dt ON gg.template_id = dt.template_id "
+        "WHERE gg.graphic_id = ?",
+        (graphic_id,)
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def get_all_generated_graphics():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT gg.*, p.name AS product_name, dt.name AS template_name "
+        "FROM generated_graphics gg "
+        "LEFT JOIN products p ON gg.product_id = p.product_id "
+        "LEFT JOIN design_templates dt ON gg.template_id = dt.template_id "
+        "ORDER BY gg.created_at DESC"
+    ).fetchall()
+    conn.close()
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Analytics helpers
+# ---------------------------------------------------------------------------
+
+
 def approve_post(post_id):
     conn = get_db()
     conn.execute("UPDATE generated_posts SET status='Approved' WHERE post_id=?", (post_id,))
@@ -656,4 +803,15 @@ def get_dashboard_stats():
         'total_posts': total_posts,
         'pending_posts': pending_posts,
         'out_of_stock': out_of_stock,
+    }
+
+
+def get_design_engine_stats():
+    conn = get_db()
+    template_count = conn.execute("SELECT COUNT(*) AS cnt FROM design_templates").fetchone()['cnt']
+    graphic_count = conn.execute("SELECT COUNT(*) AS cnt FROM generated_graphics").fetchone()['cnt']
+    conn.close()
+    return {
+        'template_count': template_count,
+        'graphic_count': graphic_count,
     }

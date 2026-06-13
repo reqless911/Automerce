@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Generate Graphics{% endblock %}
+{% block page_title %}Generate Marketing Graphics{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Design Template</label>
+                    <select name="template_id" class="form-select">
+                        <option value="">Select a template</option>
+                        {% for template in templates %}
+                            <option value="{{ template.template_id }}">{{ template.name }} ({{ template.platform or 'General' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Select Products</label>
+                    <select name="product_ids" class="form-select" multiple size="6">
+                        {% for product in products %}
+                            <option value="{{ product.product_id }}">{{ product.name }} — {{ '{:,.0f}'.format(product.price) }} KES</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple products.</div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-success">Generate Graphics</button>
+                <a href="{{ url_for('designs.designs') }}" class="btn btn-outline-secondary">Back to Designs</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if templates|length == 0 %}
+<div class="alert alert-warning">No design templates found. Create a template first.</div>
+{% endif %}
+{% endblock %}

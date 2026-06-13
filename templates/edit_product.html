@@ -50,7 +50,12 @@
                             <textarea class="form-control" id="description" name="description"
                                       rows="3">{{ product.description or '' }}</textarea>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-6">
+                            <label for="location" class="form-label fw-semibold">Location / Floor</label>
+                            <input type="text" class="form-control" id="location" name="location"
+                                   value="{{ product.location or '' }}" placeholder="e.g. 3rd Floor, Nawal Centre">
+                        </div>
+                        <div class="col-md-6">
                             <label for="image" class="form-label fw-semibold">Replace Product Image</label>
                             {% if product.image_path %}
                             <div class="mb-2">

@@ -11,11 +11,13 @@ analytics_bp = Blueprint('analytics', __name__)
 @login_required
 def dashboard():
     stats = db.get_dashboard_stats()
+    design_stats = db.get_design_engine_stats()
     recent_posts = db.get_all_posts()[:5]
     recent_logs = db.get_all_logs()[:5]
     return render_template(
         'dashboard.html',
         stats=stats,
+        design_stats=design_stats,
         recent_posts=recent_posts,
         recent_logs=recent_logs,
     )

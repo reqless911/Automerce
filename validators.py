@@ -35,6 +35,7 @@ def validate_product_form(data):
     errors = []
     name = sanitize_text(data.get('name'))
     description = sanitize_text(data.get('description'))
+    location = sanitize_text(data.get('location'))
     category_id = data.get('category_id')
 
     if category_id is not None:
@@ -61,6 +62,7 @@ def validate_product_form(data):
         'price': price,
         'stock_quantity': stock_quantity,
         'description': description,
+        'location': location,
         'category_id': category_id,
         'is_featured': 1 if data.get('is_featured') else 0,
     }, errors
@@ -85,6 +87,32 @@ def validate_template_form(data):
         'platform': platform,
         'template_body': template_body,
         'post_type': post_type,
+    }, errors
+
+
+def validate_design_template_form(data):
+    errors = []
+    name = sanitize_text(data.get('name'))
+    platform = sanitize_text(data.get('platform'))
+    layout_json = str(data.get('layout_json') or '').strip()
+
+    if not name:
+        errors.append('Design template name is required.')
+    if not layout_json:
+        errors.append('Layout JSON is required.')
+    else:
+        try:
+            import json
+            parsed = json.loads(layout_json)
+            if not isinstance(parsed, dict):
+                errors.append('Layout JSON must be an object.')
+        except Exception:
+            errors.append('Layout JSON must be valid JSON.')
+
+    return {
+        'name': name,
+        'platform': platform,
+        'layout_json': layout_json,
     }, errors
 
 

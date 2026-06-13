@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{% if create_mode %}Create Design Template{% else %}Edit Design Template{% endif %}{% endblock %}
+{% block page_title %}{% if create_mode %}Create Design Template{% else %}Edit Design Template{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Template Name</label>
+                <input type="text" name="name" value="{{ form_data.name or '' }}" class="form-control" placeholder="Summer sale banner">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Platform</label>
+                <input type="text" name="platform" value="{{ form_data.platform or '' }}" class="form-control" placeholder="Instagram, Facebook, TikTok">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Background Image</label>
+                <input type="file" name="background_image" accept="image/*" class="form-control">
+                {% if not create_mode and template.background_image %}
+                    <div class="mt-2">
+                        <small class="text-muted">Existing background:</small>
+                        <div class="mt-1">
+                            <img src="{{ url_for('uploaded_file', filename=template.background_image) }}" class="img-fluid rounded" style="max-height: 220px;" alt="Background preview">
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Layout JSON</label>
+                <textarea name="layout_json" rows="12" class="form-control font-monospace">{{ form_data.layout_json or '{}' }}</textarea>
+                <div class="form-text">
+                    Define placeholders and product image placement in JSON format. Use keys like <code>product_name</code>, <code>price</code>, <code>description</code>, <code>category</code>, or <code>location</code>.
+                </div>
+                <div class="alert alert-light mt-3 p-3">
+                    <strong>Canva template example:</strong>
+                    <pre class="mb-0 small"><code>{
+  "product_image": {"x": 300, "y": 330, "width": 600, "height": 420},
+  "placeholders": [
+    {"type": "product_name", "x": 260, "y": 220, "font_size": 56, "color": "#071342"},
+    {"type": "description", "x": 300, "y": 760, "font_size": 28, "color": "#c69b21", "max_width": 560},
+    {"type": "price", "x": 320, "y": 980, "font_size": 72, "color": "#f7c147"},
+    {"type": "location", "x": 240, "y": 1080, "font_size": 24, "color": "#edf1f8"}
+  ]
+}</code></pre>
+                    <small class="text-muted">Use your Canva export as the background and place the product photo in the central image area. The footer line can use <code>location</code> for the floor/badge text.</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save Template</button>
+                <a href="{{ url_for('designs.designs') }}" class="btn btn-outline-secondary">Back to Templates</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
